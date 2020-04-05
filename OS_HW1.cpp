@@ -3,7 +3,7 @@
 #include <queue>
 #include <algorithm>
 using namespace std;
-#define SIZE (10000)
+#define SIZE (100)
 typedef pair <int, int> pii;
 
 struct processInfo {
@@ -33,7 +33,7 @@ priority_queue < pii, vector <pii>, greater <pii> > processorQueue_2;
 queue <int> processorQueue_3;
 queue <int> IOQueue;
 
-int ganttChart[SIZE * 100];
+int ganttChart[SIZE * 1000];
 int waitingTimeArray[SIZE];
 int turnAroundTimeArray[SIZE];
 
