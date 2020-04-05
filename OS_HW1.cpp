@@ -3,7 +3,7 @@
 #include <queue>
 #include <algorithm>
 using namespace std;
-#define SIZE (100)
+#define SIZE (10000)
 typedef pair <int, int> pii;
 
 struct processInfo {
@@ -65,6 +65,7 @@ int main() {
     bool processorBurst = false;
     bool IOBurst = false;
     int curBurstProcessIdx;
+    int curIOBurstProcessIdx;
     int processExitNum = 0;
     int time = 0;
     for (;; time++) {
@@ -72,7 +73,7 @@ int main() {
             if (processInfoArray[curProcessInfoIdx].arrivalTime == time) {
                 processInfo curProcess = processInfoArray[curProcessInfoIdx];
                 int initQueue = curProcess.curQueue;
-                processInfoArray[curBurstProcessIdx].inProcessorQueue = true;
+                processInfoArray[curProcessInfoIdx].inProcessorQueue = true;
                 switch (initQueue) {
                     case 0:
                         processInfoArray[curProcessInfoIdx].timeQuantumExist = true;
@@ -86,12 +87,13 @@ int main() {
                         break;
                     case 2:
                         processInfoArray[curProcessInfoIdx].timeQuantumExist = false;
-                        processInfoArray[curBurstProcessIdx].SRTN = true;
+                        processInfoArray[curProcessInfoIdx].SRTN = true;
                         processorQueue_2.push(make_pair(curProcess.burstTime[0], curProcessInfoIdx));
+                        // init remaing time = burstTime[0]
                         break;
                     case 3:
                         processInfoArray[curProcessInfoIdx].timeQuantumExist = false;
-                        processInfoArray[curBurstProcessIdx].SRTN = false;
+                        processInfoArray[curProcessInfoIdx].SRTN = false;
                         processorQueue_3.push(curProcessInfoIdx);
                         break;
                 }
@@ -99,8 +101,6 @@ int main() {
             }
             else break;
         }
-
-
         if (!processorBurst) {
             if (!processorQueue_0.empty()) {
                 curBurstProcessIdx = processorQueue_0.front();
@@ -127,7 +127,6 @@ int main() {
                 processorBurst = true;
             }
         }
-
         // SRTN Scheduling
         if (processorBurst) {
             processInfo curProcess = processInfoArray[curBurstProcessIdx];
@@ -137,7 +136,7 @@ int main() {
                 processInfoArray[curBurstProcessIdx].SRTN = false;
                 processInfoArray[curBurstProcessIdx].inProcessorQueue = true;
                 processorQueue_3.push(curBurstProcessIdx);
-                curBurstProcessIdx = processorQueue_2.top().first;
+                curBurstProcessIdx = processorQueue_2.top().second;
                 processorQueue_2.pop();
                 processInfoArray[curBurstProcessIdx].inProcessorQueue = false;
             }
@@ -157,11 +156,11 @@ int main() {
                 --(processInfoArray[curBurstProcessIdx].burstTime[curProcess.curBurstTimeIdx]);
                 if (remainingBurstTime == 0) {
                     processorBurst = false;
-                    if ((processInfoArray[curBurstProcessIdx].curBurstTimeIdx)++
-                    == processInfoArray[curBurstProcessIdx].burstTime.size()) {
+                    if ((++(processInfoArray[curBurstProcessIdx].curBurstTimeIdx))
+                    == (processInfoArray[curBurstProcessIdx].burstTime.size())) {
                         processExitNum++;
                         waitingTimeArray[curBurstProcessIdx] = processInfoArray[curBurstProcessIdx].waitingTime;
-                        turnAroundTimeArray[curBurstProcessIdx] = time - processInfoArray[curProcessInfoIdx].arrivalTime;
+                        turnAroundTimeArray[curBurstProcessIdx] = time - processInfoArray[curBurstProcessIdx].arrivalTime;
                     }
                     else {
                         IOQueue.push(curBurstProcessIdx);
@@ -171,16 +170,15 @@ int main() {
                     int timeQuantum = --(processInfoArray[curBurstProcessIdx].timeQuantum);
                     if (timeQuantum == 0) {
                         processorBurst = false;
+                        processInfoArray[curBurstProcessIdx].inProcessorQueue = true;
                         int curQueue = ++(processInfoArray[curBurstProcessIdx].curQueue);
                         if (curQueue == 1) {
                             processInfoArray[curBurstProcessIdx].timeQuantum = 6;
-                            processInfoArray[curBurstProcessIdx].inProcessorQueue = true;
                             processorQueue_1.push(curBurstProcessIdx);
                         }
-                        else {
+                        else { // (curQueue == 2)
                             processInfoArray[curBurstProcessIdx].timeQuantumExist = false;
                             processInfoArray[curBurstProcessIdx].SRTN = true;
-                            processInfoArray[curBurstProcessIdx].inProcessorQueue = true;
                             processInfo curProcess = processInfoArray[curBurstProcessIdx];
                             processorQueue_2.push(make_pair(curProcess.burstTime[curProcess.curBurstTimeIdx],
                             curBurstProcessIdx));
@@ -188,33 +186,16 @@ int main() {
                     }
                 }
             }
-            else if (curProcess.SRTN) {
-                int remainingBurstTime =
-                --(processInfoArray[curBurstProcessIdx].burstTime[curProcess.curBurstTimeIdx]);
-                if (remainingBurstTime == 0) {
-                    processorBurst = false;
-                    if ((processInfoArray[curBurstProcessIdx].curBurstTimeIdx)++
-                    == processInfoArray[curBurstProcessIdx].burstTime.size()) {
-                        processExitNum++;
-                        waitingTimeArray[curBurstProcessIdx] = processInfoArray[curBurstProcessIdx].waitingTime;
-                        turnAroundTimeArray[curBurstProcessIdx] = time - processInfoArray[curProcessInfoIdx].arrivalTime;
-                    }
-                    else {
-                        IOQueue.push(curBurstProcessIdx);
-                    }
-                }
-
-            }
             else {
                 int remainingBurstTime =
                 --(processInfoArray[curBurstProcessIdx].burstTime[curProcess.curBurstTimeIdx]);
                 if (remainingBurstTime == 0) {
                     processorBurst = false;
-                    if ((processInfoArray[curBurstProcessIdx].curBurstTimeIdx)++
-                    == processInfoArray[curBurstProcessIdx].burstTime.size()) {
+                    if ((++(processInfoArray[curBurstProcessIdx].curBurstTimeIdx))
+                    == (processInfoArray[curBurstProcessIdx].burstTime.size())) {
                         processExitNum++;
                         waitingTimeArray[curBurstProcessIdx] = processInfoArray[curBurstProcessIdx].waitingTime;
-                        turnAroundTimeArray[curBurstProcessIdx] = time - processInfoArray[curProcessInfoIdx].arrivalTime;
+                        turnAroundTimeArray[curBurstProcessIdx] = time - processInfoArray[curBurstProcessIdx].arrivalTime;
                     }
                     else {
                         IOQueue.push(curBurstProcessIdx);
@@ -224,29 +205,55 @@ int main() {
         }
         if (processExitNum == processNum) break;
 
-
-        if (IOBurst) {
-
-        }
-        else {
+        if (!IOBurst) {
             if (!IOQueue.empty()) {
-
+                curIOBurstProcessIdx = IOQueue.front();
+                IOQueue.pop();
+                IOBurst = true;
             }
         }
 
-
+        if (IOBurst) {
+            processInfo curProcess = processInfoArray[curIOBurstProcessIdx];
+            int remainingBurstTime =
+            --(processInfoArray[curIOBurstProcessIdx].burstTime[curProcess.curBurstTimeIdx]);
+            if (remainingBurstTime == 0) {
+                IOBurst = false;
+                (processInfoArray[curIOBurstProcessIdx].curBurstTimeIdx)++;
+                processInfoArray[curIOBurstProcessIdx].inProcessorQueue = true;
+                int curQueue = --(processInfoArray[curIOBurstProcessIdx].curQueue);
+                if (curQueue < 0) curQueue++;
+                switch (curQueue) {
+                    case 0:
+                        processInfoArray[curIOBurstProcessIdx].timeQuantum = 2;
+                        processorQueue_0.push(curIOBurstProcessIdx);
+                        break;
+                    case 1:
+                        processInfoArray[curIOBurstProcessIdx].timeQuantumExist = true;
+                        processInfoArray[curIOBurstProcessIdx].timeQuantum = 6;
+                        processorQueue_1.push(curIOBurstProcessIdx);
+                        break;
+                    case 2:
+                        processInfoArray[curIOBurstProcessIdx].SRTN = true;
+                        curProcess = processInfoArray[curIOBurstProcessIdx];
+                        remainingBurstTime = curProcess.burstTime[curProcess.curBurstTimeIdx];
+                        processorQueue_2.push(make_pair(remainingBurstTime, curIOBurstProcessIdx));
+                        break;
+                }
+            }
+        }
     }
 
     double waitingTimeSum = 0;
     double turnAroundTimeSum = 0;
-    for (int i = 0; i < SIZE; i++) {
+    for (int i = 0; i < processNum; i++) {
         processInfo curProcess = processInfoArray[i];
         waitingTimeSum += waitingTimeArray[i];
         turnAroundTimeSum += turnAroundTimeArray[i];
         printf("PID : %d Waiting Time : %d Turnaround Time : %d\n",
         curProcess.pid, waitingTimeArray[i], turnAroundTimeArray[i]);
     }
-    printf("\nAverage Waiting Time : %lf\nAverage Turnaround Time : %lf\n\nGantt Chart\n",
+    printf("\nAverage Waiting Time : %lf\nAverage Turnaround Time : %lf\n\n**********Gantt Chart**********\n",
     waitingTimeSum / processNum, turnAroundTimeSum / processNum);
     for (int i = 0; i <= time; i++) {
         printf("%d ", ganttChart[i]);
