@@ -222,7 +222,7 @@ int main() {
                 (processInfoArray[curIOBurstProcessIdx].curBurstTimeIdx)++;
                 processInfoArray[curIOBurstProcessIdx].inProcessorQueue = true;
                 int curQueue = --(processInfoArray[curIOBurstProcessIdx].curQueue);
-                if (curQueue < 0) curQueue++;
+                if (curQueue < 0) curQueue = ++(processInfoArray[curIOBurstProcessIdx].curQueue);
                 switch (curQueue) {
                     case 0:
                         processInfoArray[curIOBurstProcessIdx].timeQuantum = 2;
